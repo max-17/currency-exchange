@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../lib/generated/prisma"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -35,7 +35,7 @@ model Account {
 
 model User {
   id                 String         @id @default(cuid())
-  name               String         @map("fullName")
+  name               String
   phone              String         @unique
   role               Role           @default(MANAGER)
   createdAt          DateTime       @default(now())
