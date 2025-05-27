@@ -132,6 +132,8 @@ export function CurrencyExchangeForm() {
     // If swapping would make both selects the same, clear toCurrencyId
     form.setValue("fromCurrencyId", to, { shouldValidate: true });
     form.setValue("toCurrencyId", from, { shouldValidate: true });
+    form.setValue("fromAmount", "", { shouldValidate: false });
+    form.setValue("toAmount", "", { shouldValidate: false });
   }
 
   return (
