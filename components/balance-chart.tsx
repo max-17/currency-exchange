@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {  Minus } from "lucide-react"
 
 interface BalanceChartProps {
   data: {
@@ -14,33 +13,28 @@ interface BalanceChartProps {
     changePercentage: number
     dailyData: { date: Date; balance: number }[]
   }
-  period: "daily" | "weekly" | "monthly"
+  period: "daily" | "weekly" | "monthly" | "custom"
 }
 
 export function BalanceChart({ data, period }: BalanceChartProps) {
   const formatCurrency = (amount: number, code: string) => {
     if (code === "UZS" || code === "KZT") {
-      return new Intl.NumberFormat("en-US", {
+      return new Intl.NumberFormat("ru-RU", {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
       }).format(amount)
     }
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("ru-RU", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount)
   }
-
-
 
   const getBadgeVariant = () => {
     if (data.netChange > 0) return "default"
     if (data.netChange < 0) return "destructive"
     return "secondary"
   }
-
-  // Simplified trend visualization using CSS
-  const trendDirection = data.netChange > 0 ? "up" : data.netChange < 0 ? "down" : "flat"
 
   return (
     <Card>
@@ -51,7 +45,6 @@ export function BalanceChart({ data, period }: BalanceChartProps) {
             <span className="text-sm text-muted-foreground font-normal">{data.currency.name}</span>
           </div>
           <Badge variant={getBadgeVariant()} className="flex items-center gap-1">
-            
             {data.netChange >= 0 ? "+" : ""}
             {formatCurrency(data.netChange, data.currency.code)}
           </Badge>
@@ -61,13 +54,13 @@ export function BalanceChart({ data, period }: BalanceChartProps) {
         {/* Balance Summary */}
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-muted-foreground">Start Balance</p>
+            <p className="text-muted-foreground">Начальный баланс</p>
             <p className="font-semibold">
               {formatCurrency(data.startBalance, data.currency.code)} {data.currency.code}
             </p>
           </div>
           <div>
-            <p className="text-muted-foreground">End Balance</p>
+            <p className="text-muted-foreground">Конечный баланс</p>
             <p className="font-semibold">
               {formatCurrency(data.endBalance, data.currency.code)} {data.currency.code}
             </p>
@@ -76,7 +69,7 @@ export function BalanceChart({ data, period }: BalanceChartProps) {
 
         {/* Change Percentage */}
         <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">Change</span>
+          <span className="text-muted-foreground">Изменение</span>
           <span
             className={`font-medium ${
               data.netChange > 0 ? "text-green-600" : data.netChange < 0 ? "text-red-600" : "text-gray-600"

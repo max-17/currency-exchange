@@ -82,47 +82,65 @@ export interface BalancePeriodData {
   dailyData: { date: Date; balance: number }[]
 }
 
+// New Balance Transaction Types
+export type BalanceTransactionType = "ADD" | "SUBTRACT" | "CONVERSION_IN" | "CONVERSION_OUT"
+
+export interface BalanceTransaction {
+  id: string
+  type: BalanceTransactionType
+  createdAt: Date
+  userId: string
+  user: User
+  amount: number
+  currencyId: string
+  currency: Currency
+  description: string
+  branchId?: string
+  relatedExchangeId?: number
+  balanceAfter: number
+}
+
 // Mock Branches
 export const mockBranches: Branch[] = [
-  { id: "branch1", name: "Tashkent Central", location: "Tashkent" },
-  { id: "branch2", name: "Samarkand Branch", location: "Samarkand" },
-  { id: "branch3", name: "Bukhara Branch", location: "Bukhara" },
-  { id: "MAIN", name: "Combined", location: "Combined" },
+  { id: "branch1", name: "Ташкент Центральный", location: "Ташкент" },
+  { id: "branch2", name: "Самаркандский филиал", location: "Самарканд" },
+  { id: "branch3", name: "Бухарский филиал", location: "Бухара" },
+  { id: "MAIN", name: "Объединенный", location: "Объединенный" },
 ]
 
 // Mock Users
 export const mockUsers: User[] = [
   {
     id: "user1",
-    name: "John Manager",
+    name: "Иван Менеджеров",
     phone: "+998901234567",
     role: "ADMIN",
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-12-29"),
-    address: "Tashkent, Uzbekistan",
-    email: "john@example.com",
+    address: "Ташкент, Узбекистан",
+    email: "ivan@example.com",
     image: "/placeholder.svg?height=40&width=40",
   },
   {
     id: "user2",
-    name: "Sarah Admin",
+    name: "Сара Админова",
     phone: "+998907654321",
     role: "MANAGER",
     createdAt: new Date("2024-01-10"),
     updatedAt: new Date("2024-12-28"),
-    address: "Tashkent, Uzbekistan",
-    email: "sarah@example.com",
+    address: "Ташкент, Узбекистан",
+    email: "sara@example.com",
     image: "/placeholder.svg?height=40&width=40",
   },
 ]
 
 // Mock Currencies
 export const mockCurrencies: Currency[] = [
-  { id: "curr1", code: "USD", name: "US Dollar" },
-  { id: "curr2", code: "EUR", name: "Euro" },
-  { id: "curr3", code: "KZT", name: "Kazakhstani Tenge" },
-  { id: "curr4", code: "UZS", name: "Uzbek Som" },
-  { id: "curr5", code: "RUB", name: "Russian Ruble" },
+  { id: "curr1", code: "USD", name: "Доллар США" },
+  { id: "curr2", code: "EUR", name: "Евро" },
+  { id: "curr3", code: "KZT", name: "Казахстанский тенге" },
+  { id: "curr4", code: "UZS", name: "Узбекский сум" },
+  { id: "curr5", code: "RUB", name: "Российский рубль" },
 ]
 
 // Mock Wallets
@@ -161,6 +179,116 @@ export const mockWallets: Wallet[] = [
     balance: 890000.5,
     updatedAt: new Date("2024-12-29T08:30:00"),
     currency: mockCurrencies[4],
+  },
+]
+
+// Mock Balance Transactions
+export const mockBalanceTransactions: BalanceTransaction[] = [
+  {
+    id: "bt1",
+    type: "ADD",
+    currencyId: "curr1",
+    currency: mockCurrencies[0],
+    amount: 5000.0,
+    description: "Первоначальный депозит из банка",
+    createdAt: new Date("2024-12-29T09:00:00"),
+    userId: "user1",
+    user: mockUsers[0],
+    branchId: "branch1",
+    balanceAfter: 20420.5,
+  },
+  {
+    id: "bt2",
+    type: "SUBTRACT",
+    currencyId: "curr1",
+    amount: 500.0,
+    currency: mockCurrencies[0],
+    description: "Оплата аренды офиса",
+    createdAt: new Date("2024-12-29T10:15:00"),
+    userId: "user1",
+    user: mockUsers[0],
+    branchId: "branch1",
+    balanceAfter: 19920.5,
+  },
+  {
+    id: "bt3",
+    type: "CONVERSION_OUT",
+    currencyId: "curr1",
+    currency: mockCurrencies[0],
+    amount: 1000.0,
+    description: "Конвертировано в EUR для клиента",
+    createdAt: new Date("2024-12-29T11:30:00"),
+    userId: "user1",
+    user: mockUsers[0],
+    branchId: "branch1",
+    relatedExchangeId: 1,
+    balanceAfter: 18920.5,
+  },
+  {
+    id: "bt4",
+    type: "CONVERSION_IN",
+    currencyId: "curr2",
+    currency: mockCurrencies[1],
+    amount: 920.0,
+    description: "Получено от конвертации USD",
+    createdAt: new Date("2024-12-29T11:30:00"),
+    userId: "user1",
+    user: mockUsers[0],
+    branchId: "branch1",
+    relatedExchangeId: 1,
+    balanceAfter: 9670.25,
+  },
+  {
+    id: "bt5",
+    type: "ADD",
+    currencyId: "curr4",
+    currency: mockCurrencies[3],
+    amount: 10000000.0,
+    description: "Наличный депозит от клиента",
+    createdAt: new Date("2024-12-29T12:45:00"),
+    userId: "user2",
+    user: mockUsers[1],
+    branchId: "branch1",
+    balanceAfter: 135000000.0,
+  },
+  {
+    id: "bt6",
+    type: "SUBTRACT",
+    currencyId: "curr2",
+    amount: 200.0,
+    currency: mockCurrencies[1],
+    description: "Выплата зарплаты сотрудникам",
+    createdAt: new Date("2024-12-28T16:00:00"),
+    userId: "user1",
+    user: mockUsers[0],
+    branchId: "branch1",
+    balanceAfter: 8550.25,
+  },
+  {
+    id: "bt7",
+    type: "ADD",
+    currencyId: "curr5",
+    currency: mockCurrencies[4],
+    amount: 50000.0,
+    description: "Получен платеж от клиента",
+    createdAt: new Date("2024-12-28T14:30:00"),
+    userId: "user2",
+    user: mockUsers[1],
+    branchId: "branch1",
+    balanceAfter: 940000.5,
+  },
+  {
+    id: "bt8",
+    type: "SUBTRACT",
+    currencyId: "curr3",
+    amount: 100000.0,
+    currency: mockCurrencies[2],
+    description: "Покупка оборудования",
+    createdAt: new Date("2024-12-27T10:00:00"),
+    userId: "user1",
+    user: mockUsers[0],
+    branchId: "branch1",
+    balanceAfter: 2990000.75,
   },
 ]
 
@@ -578,7 +706,7 @@ export const mockExchanges: Exchange[] = [
 
 // Helper functions
 export function getCurrentUser(): User {
-  return mockUsers[0] // Return John Manager as current user
+  return mockUsers[0] // Return Иван Менеджеров as current user
 }
 
 export function getWalletBalance(currencyId: string): number {
@@ -707,4 +835,45 @@ export function getCombinedBalanceData(period: "daily" | "weekly" | "monthly"): 
       dailyData,
     }
   })
+}
+
+// Balance Transaction Helper Functions
+export function getBalanceTransactions(limit?: number): BalanceTransaction[] {
+  const sorted = [...mockBalanceTransactions].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+  return limit ? sorted.slice(0, limit) : sorted
+}
+
+export function getBalanceTransactionsByType(type: BalanceTransactionType): BalanceTransaction[] {
+  return mockBalanceTransactions.filter((transaction) => transaction.type === type)
+}
+
+export function getBalanceTransactionsByCurrency(currencyId: string): BalanceTransaction[] {
+  return mockBalanceTransactions.filter((transaction) => transaction.currencyId === currencyId)
+}
+
+// Simulate adding a new balance transaction
+export function addBalanceTransaction(
+  transaction: Omit<BalanceTransaction, "id" | "createdAt" | "user" | "currency" | "balanceAfter">,
+): BalanceTransaction {
+  const newTransaction: BalanceTransaction = {
+    ...transaction,
+    id: `bt${mockBalanceTransactions.length + 1}`,
+    createdAt: new Date(),
+    user: getCurrentUser(),
+    currency: mockCurrencies.find((c) => c.id === transaction.currencyId)!,
+    balanceAfter:
+      getWalletBalance(transaction.currencyId) +
+      (transaction.type === "ADD" ? transaction.amount : -transaction.amount),
+  }
+
+  mockBalanceTransactions.unshift(newTransaction)
+
+  // Update wallet balance
+  const wallet = mockWallets.find((w) => w.currencyId === transaction.currencyId)
+  if (wallet) {
+    wallet.balance = newTransaction.balanceAfter
+    wallet.updatedAt = new Date()
+  }
+
+  return newTransaction
 }

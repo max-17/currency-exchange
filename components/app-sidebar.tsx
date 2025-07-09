@@ -3,7 +3,6 @@
 import { ChevronDown, MapPin, Plus, LogOut, BarChart3, Wallet, User, LayoutDashboard } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { mockBranches } from "@/lib/mock-data"
 
 import {
   Sidebar,
@@ -23,22 +22,22 @@ import { getCurrentUser } from "@/lib/mock-data"
 
 const navigationItems = [
   {
-    title: "Dashboard",
+    title: "Панель управления",
     url: "/dashboard",
     icon: LayoutDashboard,
   },
   {
-    title: "Balance",
+    title: "Баланс",
     url: "/dashboard/balance",
     icon: Wallet,
   },
   {
-    title: "Stats",
+    title: "Статистика",
     url: "/dashboard/stats",
     icon: BarChart3,
   },
   {
-    title: "Profile",
+    title: "Профиль",
     url: "/dashboard/profile",
     icon: User,
   },
@@ -59,7 +58,7 @@ export function AppSidebar() {
                 <SidebarMenuButton className="w-full justify-between">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    <span>Tashkent</span>
+                    <span>Ташкент</span>
                   </div>
                   <ChevronDown className="h-4 w-4" />
                 </SidebarMenuButton>
@@ -67,20 +66,20 @@ export function AppSidebar() {
               <DropdownMenuContent className="w-[--radix-popper-anchor-width]">
                 <DropdownMenuItem>
                   <MapPin className="h-4 w-4 mr-2" />
-                  Tashkent
+                  Ташкент
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <MapPin className="h-4 w-4 mr-2" />
-                  Samarkand
+                  Самарканд
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <MapPin className="h-4 w-4 mr-2" />
-                  Bukhara
+                  Бухара
                 </DropdownMenuItem>
-                { <DropdownMenuItem>
+                <DropdownMenuItem>
                   <MapPin className="h-4 w-4 mr-2" />
-                  Combined
-                </DropdownMenuItem>}
+                  Объединенный
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
@@ -92,7 +91,7 @@ export function AppSidebar() {
         <Button asChild className="w-full">
           <Link href="/currency-exchange">
             <Plus className="h-4 w-4 mr-2" />
-            Create Exchange
+            Создать обмен
           </Link>
         </Button>
       </SidebarHeader>
@@ -128,7 +127,9 @@ export function AppSidebar() {
                     </div>
                     <div className="flex flex-col items-start text-xs">
                       <span className="font-medium">{currentUser.name}</span>
-                      <span className="text-muted-foreground">{currentUser.role}</span>
+                      <span className="text-muted-foreground">
+                        {currentUser.role === "ADMIN" ? "Администратор" : "Менеджер"}
+                      </span>
                     </div>
                   </div>
                   <ChevronDown className="h-4 w-4" />
@@ -137,11 +138,11 @@ export function AppSidebar() {
               <DropdownMenuContent className="w-[--radix-popper-anchor-width]" align="end">
                 <DropdownMenuItem>
                   <User className="h-4 w-4 mr-2" />
-                  Profile
+                  Профиль
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-red-600">
                   <LogOut className="h-4 w-4 mr-2" />
-                  Sign out
+                  Выйти
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

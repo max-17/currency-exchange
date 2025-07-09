@@ -10,20 +10,20 @@ interface ExchangeHistoryTableProps {
 
 export function ExchangeHistoryTable({ exchanges }: ExchangeHistoryTableProps) {
   const formatCurrency = (amount: number, code: string) => {
-    if (code === "UZS") {
-      return new Intl.NumberFormat("en-US", {
+    if (code === "UZS" || code === "KZT") {
+      return new Intl.NumberFormat("ru-RU", {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
       }).format(amount)
     }
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("ru-RU", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount)
   }
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("ru-RU", {
       month: "short",
       day: "numeric",
       hour: "2-digit",
@@ -37,11 +37,11 @@ export function ExchangeHistoryTable({ exchanges }: ExchangeHistoryTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>ID</TableHead>
-            <TableHead>From</TableHead>
-            <TableHead>To</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Rate</TableHead>
-            <TableHead>User</TableHead>
+            <TableHead>Из</TableHead>
+            <TableHead>В</TableHead>
+            <TableHead>Дата</TableHead>
+            <TableHead>Курс</TableHead>
+            <TableHead>Пользователь</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -71,7 +71,9 @@ export function ExchangeHistoryTable({ exchanges }: ExchangeHistoryTableProps) {
               <TableCell>
                 <div className="flex flex-col">
                   <span className="font-medium">{exchange.user.name}</span>
-                  <span className="text-xs text-muted-foreground">{exchange.user.role}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {exchange.user.role === "ADMIN" ? "Администратор" : "Менеджер"}
+                  </span>
                 </div>
               </TableCell>
             </TableRow>

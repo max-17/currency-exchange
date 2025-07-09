@@ -27,7 +27,7 @@ export function CurrencyCard({ currency, currentBalance, dailyChange, exchangeRa
 
   const handleSaveRate = (rateId: number) => {
     // In a real app, this would save to the database
-    console.log(`Saving rate ${rateId} with value ${editingRates[rateId]}`)
+    console.log(`Сохранение курса ${rateId} со значением ${editingRates[rateId]}`)
     const newRates = { ...editingRates }
     delete newRates[rateId]
     setEditingRates(newRates)
@@ -47,12 +47,12 @@ export function CurrencyCard({ currency, currentBalance, dailyChange, exchangeRa
 
   const formatCurrency = (amount: number, code: string) => {
     if (code === "UZS" || code === "KZT") {
-      return new Intl.NumberFormat("en-US", {
+      return new Intl.NumberFormat("ru-RU", {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
       }).format(amount)
     }
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("ru-RU", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount)
@@ -81,7 +81,7 @@ export function CurrencyCard({ currency, currentBalance, dailyChange, exchangeRa
       <CardContent className="space-y-3 pt-0">
         {/* Current Balance */}
         <div>
-          <p className="text-xs text-muted-foreground">Current Balance</p>
+          <p className="text-xs text-muted-foreground">Текущий баланс</p>
           <p className="text-lg font-bold">
             {formatCurrency(currentBalance, currency.code)} {currency.code}
           </p>
@@ -90,7 +90,7 @@ export function CurrencyCard({ currency, currentBalance, dailyChange, exchangeRa
         {/* Exchange Rates */}
         {exchangeRates.length > 0 && (
           <div>
-            <p className="text-xs text-muted-foreground mb-2">Exchange Rates</p>
+            <p className="text-xs text-muted-foreground mb-2">Обменные курсы</p>
             <div className="space-y-1">
               {displayedRates.map((rate) => (
                 <div key={rate.id} className="flex items-center justify-between p-1.5 bg-muted/30 rounded text-xs">
@@ -153,12 +153,12 @@ export function CurrencyCard({ currency, currentBalance, dailyChange, exchangeRa
                   {showAllRates ? (
                     <>
                       <ChevronUp className="h-3 w-3 mr-1" />
-                      Show Less
+                      Показать меньше
                     </>
                   ) : (
                     <>
                       <ChevronDown className="h-3 w-3 mr-1" />
-                      Show All ({exchangeRates.length} rates)
+                      Показать все ({exchangeRates.length} курсов)
                     </>
                   )}
                 </Button>

@@ -13,9 +13,9 @@ interface BranchSelectorProps {
 
 export function BranchSelector({ selectedBranch, onBranchChange, showCombined = false }: BranchSelectorProps) {
   const getBranchName = (branchId: string) => {
-    if (branchId === "combined") return "Combined Balance"
+    if (branchId === "combined") return "Объединенный баланс"
     const branch = mockBranches.find((b) => b.id === branchId)
-    return branch?.name || "Select Branch"
+    return branch?.name || "Выберите филиал"
   }
 
   return (
@@ -31,7 +31,7 @@ export function BranchSelector({ selectedBranch, onBranchChange, showCombined = 
         {showCombined && (
           <DropdownMenuItem onClick={() => onBranchChange("combined")}>
             <div className="flex items-center justify-between w-full">
-              <span>Combined Balance</span>
+              <span>Объединенный баланс</span>
               {selectedBranch === "combined" && <Check className="h-4 w-4" />}
             </div>
           </DropdownMenuItem>
