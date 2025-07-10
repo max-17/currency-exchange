@@ -1,33 +1,53 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { ArrowRightLeft, Check } from "lucide-react"
+import { useState, useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { ArrowRightLeft, Check } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { toast } from "@/hooks/use-toast"
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+import { toast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Select,
+} from "@/components/ui/select";
 
 // Define types for our data
 type Currency = {
-  id: string
-  code: string
-  name: string
-}
+  id: string;
+  code: string;
+  name: string;
+};
 
 type ExchangeRate = {
-  id: string
-  baseCurrencyId: string
-  quoteCurrencyId: string
-  rate: number
-}
+  id: string;
+  baseCurrencyId: string;
+  quoteCurrencyId: string;
+  rate: number;
+};
 
 // Mock data for currencies
 const mockCurrencies: Currency[] = [
@@ -36,7 +56,7 @@ const mockCurrencies: Currency[] = [
   { id: "3", code: "GBP", name: "Британский фунт" },
   { id: "4", code: "JPY", name: "Японская йена" },
   { id: "5", code: "CAD", name: "Канадский доллар" },
-]
+];
 
 // Mock data for exchange rates
 const mockRates: ExchangeRate[] = [
@@ -60,7 +80,7 @@ const mockRates: ExchangeRate[] = [
   { id: "18", baseCurrencyId: "5", quoteCurrencyId: "2", rate: 0.68 },
   { id: "19", baseCurrencyId: "5", quoteCurrencyId: "3", rate: 0.57 },
   { id: "20", baseCurrencyId: "5", quoteCurrencyId: "4", rate: 110.15 },
-]
+];
 
 // Form schema with validation
 const formSchema = z
@@ -73,28 +93,29 @@ const formSchema = z
     }),
     fromAmount: z.string().refine(
       (val) => {
-        const num = Number.parseFloat(val)
-        return !isNaN(num) && num >= 0
+        const num = Number.parseFloat(val);
+        return !isNaN(num) && num >= 0;
       },
-      { message: "Сумма должна быть положительным числом" },
+      { message: "Сумма должна быть положительным числом" }
     ),
     toAmount: z.string().refine(
       (val) => {
-        const num = Number.parseFloat(val)
-        return !isNaN(num) && num >= 0
+        const num = Number.parseFloat(val);
+        return !isNaN(num) && num >= 0;
       },
-      { message: "Сумма должна быть положительным числом" },
+      { message: "Сумма должна быть положительным числом" }
     ),
   })
   .refine((data) => data.fromCurrencyId !== data.toCurrencyId, {
     message: "Нельзя выбрать одинаковую валюту",
     path: ["toCurrencyId"], // Show error on the toCurrency field
-  })
+  });
 
-export function CurrencyExchangeForm() {
-  const [currentRate, setCurrentRate] = useState<number | null>(null)
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [lastModified, setLastModified] = useState<"from" | "to" | null>(null)
+export function CurrencyExchangeForm({ className }: { className?: string }) {
+  const [currentRate, setCurrentRate] = useState<number | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  // const [open, setOpen] = useState(false);
+  const [lastModified, setLastModified] = useState<"from" | "to" | null>(null);
 
   // Initialize form with react-hook-form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -105,69 +126,89 @@ export function CurrencyExchangeForm() {
       fromAmount: "",
       toAmount: "",
     },
-  })
+  });
 
   // Watch form values
-  const fromCurrencyId = form.watch("fromCurrencyId")
-  const toCurrencyId = form.watch("toCurrencyId")
-  const fromAmount = form.watch("fromAmount")
-  const toAmount = form.watch("toAmount")
+  const fromCurrencyId = form.watch("fromCurrencyId");
+  const toCurrencyId = form.watch("toCurrencyId");
+  const fromAmount = form.watch("fromAmount");
+  const toAmount = form.watch("toAmount");
 
   // Find and set exchange rate when currencies change
   useEffect(() => {
     if (fromCurrencyId && toCurrencyId && fromCurrencyId !== toCurrencyId) {
       // Find the exchange rate
-      const rate = mockRates.find((r) => r.baseCurrencyId === fromCurrencyId && r.quoteCurrencyId === toCurrencyId)
+      const rate = mockRates.find(
+        (r) =>
+          r.baseCurrencyId === fromCurrencyId &&
+          r.quoteCurrencyId === toCurrencyId
+      );
 
       if (rate) {
-        setCurrentRate(rate.rate)
+        setCurrentRate(rate.rate);
       } else {
         // Check for inverse rate
         const inverseRate = mockRates.find(
-          (r) => r.baseCurrencyId === toCurrencyId && r.quoteCurrencyId === fromCurrencyId,
-        )
+          (r) =>
+            r.baseCurrencyId === toCurrencyId &&
+            r.quoteCurrencyId === fromCurrencyId
+        );
 
         if (inverseRate) {
-          const rateValue = 1 / inverseRate.rate
-          setCurrentRate(Number.parseFloat(rateValue.toFixed(6)))
+          const rateValue = 1 / inverseRate.rate;
+          setCurrentRate(Number.parseFloat(rateValue.toFixed(6)));
         } else {
-          setCurrentRate(null)
+          setCurrentRate(null);
         }
       }
     } else {
-      setCurrentRate(null)
+      setCurrentRate(null);
     }
-  }, [fromCurrencyId, toCurrencyId])
+  }, [fromCurrencyId, toCurrencyId]);
 
   // Calculate amounts when inputs change
   useEffect(() => {
-    if (!currentRate || fromCurrencyId === toCurrencyId) return
+    if (!currentRate || fromCurrencyId === toCurrencyId) return;
 
     // Skip calculation if no amount is entered yet
-    if (fromAmount === "" && toAmount === "") return
+    if (fromAmount === "" && toAmount === "") return;
 
     // Calculate based on which field was last modified
-    if (lastModified === "from" || (lastModified === null && fromAmount !== "")) {
-      const amount = Number.parseFloat(fromAmount || "0")
+    if (
+      lastModified === "from" ||
+      (lastModified === null && fromAmount !== "")
+    ) {
+      const amount = Number.parseFloat(fromAmount || "0");
       if (!isNaN(amount)) {
-        const calculated = (amount * currentRate).toFixed(2)
-        form.setValue("toAmount", calculated, { shouldValidate: false })
+        const calculated = (amount * currentRate).toFixed(2);
+        form.setValue("toAmount", calculated, { shouldValidate: false });
       }
-    } else if (lastModified === "to" || (lastModified === null && toAmount !== "")) {
-      const amount = Number.parseFloat(toAmount || "0")
+    } else if (
+      lastModified === "to" ||
+      (lastModified === null && toAmount !== "")
+    ) {
+      const amount = Number.parseFloat(toAmount || "0");
       if (!isNaN(amount)) {
-        const calculated = (amount / currentRate).toFixed(2)
-        form.setValue("fromAmount", calculated, { shouldValidate: false })
+        const calculated = (amount / currentRate).toFixed(2);
+        form.setValue("fromAmount", calculated, { shouldValidate: false });
       }
     }
-  }, [currentRate, fromAmount, toAmount, lastModified, form, fromCurrencyId, toCurrencyId])
+  }, [
+    currentRate,
+    fromAmount,
+    toAmount,
+    lastModified,
+    form,
+    fromCurrencyId,
+    toCurrencyId,
+  ]);
 
   // Reset success state when form changes
   useEffect(() => {
     if (isSuccess) {
-      setIsSuccess(false)
+      setIsSuccess(false);
     }
-  }, [fromCurrencyId, toCurrencyId, fromAmount, toAmount, isSuccess])
+  }, [fromCurrencyId, toCurrencyId, fromAmount, toAmount, isSuccess]);
 
   // Handle form submission
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -176,18 +217,18 @@ export function CurrencyExchangeForm() {
         title: "Ошибка",
         description: "Пожалуйста, выберите разные валюты",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     // Just show success message - no server action
     toast({
       title: "Успешно",
       description: "Обмен успешно проверен",
-    })
+    });
 
     // Set success state
-    setIsSuccess(true)
+    setIsSuccess(true);
 
     // Log the data that would be submitted
     console.log({
@@ -196,7 +237,7 @@ export function CurrencyExchangeForm() {
       fromAmount: Number.parseFloat(values.fromAmount || "0"),
       toAmount: Number.parseFloat(values.toAmount || "0"),
       rate: currentRate,
-    })
+    });
 
     // Reset form after short delay
     setTimeout(() => {
@@ -205,189 +246,216 @@ export function CurrencyExchangeForm() {
         toCurrencyId: "",
         fromAmount: "",
         toAmount: "",
-      })
-      setCurrentRate(null)
-      setIsSuccess(false)
-      setLastModified(null)
-    }, 2000)
+      });
+      setCurrentRate(null);
+      setIsSuccess(false);
+      setLastModified(null);
+    }, 2000);
   }
 
   // Swap currencies
   function swapCurrencies() {
-    const from = form.getValues("fromCurrencyId")
-    const to = form.getValues("toCurrencyId")
-    const fromAmt = form.getValues("fromAmount")
-    const toAmt = form.getValues("toAmount")
+    const from = form.getValues("fromCurrencyId");
+    const to = form.getValues("toCurrencyId");
+    const fromAmt = form.getValues("fromAmount");
+    const toAmt = form.getValues("toAmount");
 
     if (from && to) {
-      form.setValue("fromCurrencyId", to, { shouldValidate: true })
-      form.setValue("toCurrencyId", from, { shouldValidate: true })
+      form.setValue("fromCurrencyId", to, { shouldValidate: true });
+      form.setValue("toCurrencyId", from, { shouldValidate: true });
 
       // Also swap the amounts
-      form.setValue("fromAmount", toAmt, { shouldValidate: false })
-      form.setValue("toAmount", fromAmt, { shouldValidate: false })
+      form.setValue("fromAmount", toAmt, { shouldValidate: false });
+      form.setValue("toAmount", fromAmt, { shouldValidate: false });
 
       // Keep the last modified field the same (but swapped)
-      setLastModified(lastModified === "from" ? "to" : "from")
+      setLastModified(lastModified === "from" ? "to" : "from");
     }
   }
 
   // Handle amount input changes
   const handleFromAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    form.setValue("fromAmount", e.target.value, { shouldValidate: true })
-    setLastModified("from")
-  }
+    form.setValue("fromAmount", e.target.value, { shouldValidate: true });
+    setLastModified("from");
+  };
 
   const handleToAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    form.setValue("toAmount", e.target.value, { shouldValidate: true })
-    setLastModified("to")
-  }
+    form.setValue("toAmount", e.target.value, { shouldValidate: true });
+    setLastModified("to");
+  };
 
   return (
-    <Card className="w-full max-w-3xl mx-auto">
-      <CardContent className="pt-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-[1fr,auto,1fr] gap-4 items-end">
-              {/* From Currency */}
-              <FormField
-                control={form.control}
-                name="fromCurrencyId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Из валюты</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isSuccess}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Выберите валюту" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {mockCurrencies.map((currency) => (
-                          <SelectItem key={currency.id} value={currency.id}>
-                            {currency.code} - {currency.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+    <div className={className}>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button className="w-full max-w-3xl mx-auto">Обмен валют</Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-3xl w-full">
+          <DialogHeader>
+            <DialogTitle>Обмен валют</DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-[1fr,auto,1fr] gap-4 items-end">
+                {/* From Currency */}
+                <FormField
+                  control={form.control}
+                  name="fromCurrencyId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Из валюты</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={isSuccess}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Выберите валюту" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {mockCurrencies.map((currency) => (
+                            <SelectItem key={currency.id} value={currency.id}>
+                              {currency.code} - {currency.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* Swap Button */}
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="h-10 w-10 bg-transparent"
-                onClick={swapCurrencies}
-                disabled={!fromCurrencyId || !toCurrencyId || isSuccess || fromCurrencyId === toCurrencyId}
-              >
-                <ArrowRightLeft className="h-4 w-4" />
-              </Button>
+                {/* Swap Button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 bg-transparent"
+                  onClick={swapCurrencies}
+                  disabled={
+                    !fromCurrencyId ||
+                    !toCurrencyId ||
+                    isSuccess ||
+                    fromCurrencyId === toCurrencyId
+                  }
+                >
+                  <ArrowRightLeft className="h-4 w-4" />
+                </Button>
 
-              {/* To Currency */}
-              <FormField
-                control={form.control}
-                name="toCurrencyId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>В валюту</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isSuccess}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Выберите валюту" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {mockCurrencies.map((currency) => (
-                          <SelectItem key={currency.id} value={currency.id}>
-                            {currency.code} - {currency.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Exchange Rate Display - Show as soon as both currencies are selected */}
-            {currentRate && fromCurrencyId !== toCurrencyId && (
-              <div className="text-sm text-center py-1">
-                <span className="font-medium">Текущий курс:</span> 1{" "}
-                {mockCurrencies.find((c) => c.id === fromCurrencyId)?.code} = {currentRate.toFixed(6)}{" "}
-                {mockCurrencies.find((c) => c.id === toCurrencyId)?.code}
+                {/* To Currency */}
+                <FormField
+                  control={form.control}
+                  name="toCurrencyId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>В валюту</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={isSuccess}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Выберите валюту" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {mockCurrencies.map((currency) => (
+                            <SelectItem key={currency.id} value={currency.id}>
+                              {currency.code} - {currency.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            )}
 
-            <div className="grid grid-cols-2 gap-8">
-              {/* From Amount - Now with custom onChange handler */}
-              <FormField
-                control={form.control}
-                name="fromAmount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Сумма</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0.00"
-                        {...field}
-                        onChange={handleFromAmountChange}
-                        disabled={isSuccess || !currentRate}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* To Amount - Now editable with custom onChange handler */}
-              <FormField
-                control={form.control}
-                name="toAmount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Конвертированная сумма</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0.00"
-                        {...field}
-                        onChange={handleToAmountChange}
-                        disabled={isSuccess || !currentRate}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSuccess || !currentRate || fromCurrencyId === toCurrencyId || !fromAmount || !toAmount}
-            >
-              {isSuccess ? (
-                <>
-                  <Check className="mr-2 h-4 w-4" />
-                  Проверено
-                </>
-              ) : (
-                "Проверить обмен"
+              {/* Exchange Rate Display - Show as soon as both currencies are selected */}
+              {currentRate && fromCurrencyId !== toCurrencyId && (
+                <div className="text-sm text-center py-1">
+                  <span className="font-medium">Текущий курс:</span> 1{" "}
+                  {mockCurrencies.find((c) => c.id === fromCurrencyId)?.code} ={" "}
+                  {currentRate.toFixed(6)}{" "}
+                  {mockCurrencies.find((c) => c.id === toCurrencyId)?.code}
+                </div>
               )}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
-  )
+
+              <div className="grid grid-cols-2 gap-8">
+                {/* From Amount - Now with custom onChange handler */}
+                <FormField
+                  control={form.control}
+                  name="fromAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Сумма</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          {...field}
+                          onChange={handleFromAmountChange}
+                          disabled={isSuccess || !currentRate}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* To Amount - Now editable with custom onChange handler */}
+                <FormField
+                  control={form.control}
+                  name="toAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Конвертированная сумма</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          {...field}
+                          onChange={handleToAmountChange}
+                          disabled={isSuccess || !currentRate}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  isSuccess ||
+                  !currentRate ||
+                  fromCurrencyId === toCurrencyId ||
+                  !fromAmount ||
+                  !toAmount
+                }
+              >
+                {isSuccess ? (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Проверено
+                  </>
+                ) : (
+                  "Проверить обмен"
+                )}
+              </Button>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }
