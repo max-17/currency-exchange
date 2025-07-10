@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-// import Providers from "./providers";
+import { Providers } from "@/components/providers";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
@@ -21,9 +21,7 @@ export default async function RootLayout({
     return (
       <html lang="en" suppressHydrationWarning>
         <body>
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            {children}
-          </ThemeProvider>
+          <Providers>{children}</Providers>
         </body>
       </html>
     );
