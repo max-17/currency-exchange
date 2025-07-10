@@ -1,8 +1,18 @@
-"use client"
+"use client";
 
-import { ChevronDown, MapPin, Plus, LogOut, BarChart3, Wallet, User, LayoutDashboard } from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import {
+  ChevronDown,
+  MapPin,
+  Plus,
+  LogOut,
+  BarChart3,
+  Wallet,
+  User,
+  LayoutDashboard,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
@@ -15,10 +25,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
-} from "@/components/ui/sidebar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { getCurrentUser } from "@/lib/mock-data"
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { getCurrentUser } from "@/lib/mock-data";
+import { CurrencyExchangeForm } from "./currency-exchange-form";
 
 const navigationItems = [
   {
@@ -41,11 +57,11 @@ const navigationItems = [
     url: "/dashboard/profile",
     icon: User,
   },
-]
+];
 
 export function AppSidebar() {
-  const pathname = usePathname()
-  const currentUser = getCurrentUser()
+  const pathname = usePathname();
+  const currentUser = getCurrentUser();
 
   return (
     <Sidebar>
@@ -88,12 +104,7 @@ export function AppSidebar() {
         <SidebarSeparator />
 
         {/* Create Exchange Button */}
-        <Button asChild className="w-full">
-          <Link href="/currency-exchange">
-            <Plus className="h-4 w-4 mr-2" />
-            Создать обмен
-          </Link>
-        </Button>
+        <CurrencyExchangeForm />
       </SidebarHeader>
 
       <SidebarContent>
@@ -110,6 +121,17 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem key="managers">
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === "/dashboard/managers"}
+                >
+                  <Link href="/dashboard/managers">
+                    <Users className="h-4 w-4" />
+                    <span>Менеджеры</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -128,14 +150,19 @@ export function AppSidebar() {
                     <div className="flex flex-col items-start text-xs">
                       <span className="font-medium">{currentUser.name}</span>
                       <span className="text-muted-foreground">
-                        {currentUser.role === "ADMIN" ? "Администратор" : "Менеджер"}
+                        {currentUser.role === "ADMIN"
+                          ? "Администратор"
+                          : "Менеджер"}
                       </span>
                     </div>
                   </div>
                   <ChevronDown className="h-4 w-4" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[--radix-popper-anchor-width]" align="end">
+              <DropdownMenuContent
+                className="w-[--radix-popper-anchor-width]"
+                align="end"
+              >
                 <DropdownMenuItem>
                   <User className="h-4 w-4 mr-2" />
                   Профиль
@@ -150,5 +177,5 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
