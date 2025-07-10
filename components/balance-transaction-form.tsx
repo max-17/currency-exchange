@@ -1,19 +1,41 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Plus, Minus, Check } from "lucide-react"
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Plus, Minus, Check } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { toast } from "@/hooks/use-toast"
-import { mockCurrencies, addBalanceTransaction, type BalanceTransactionType } from "@/lib/mock-data"
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
+import {
+  mockCurrencies,
+  addBalanceTransaction,
+  type BalanceTransactionType,
+} from "@/lib/mock-data";
 
 const formSchema = z.object({
   type: z.enum(["ADD", "SUBTRACT"]),
@@ -22,22 +44,29 @@ const formSchema = z.object({
   }),
   amount: z.string().refine(
     (val) => {
-      const num = Number.parseFloat(val)
-      return !isNaN(num) && num > 0
+      const num = Number.parseFloat(val);
+      return !isNaN(num) && num > 0;
     },
-    { message: "Сумма должна быть положительным числом" },
+    { message: "Сумма должна быть положительным числом" }
   ),
-  description: z.string().min(1, "Описание обязательно").max(200, "Описание должно быть менее 200 символов"),
-})
+  description: z
+    .string()
+    .min(1, "Описание обязательно")
+    .max(200, "Описание должно быть менее 200 символов"),
+});
 
 interface BalanceTransactionFormProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onTransactionAdded?: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onTransactionAdded?: () => void;
 }
 
-export function BalanceTransactionForm({ open, onOpenChange, onTransactionAdded }: BalanceTransactionFormProps) {
-  const [isSuccess, setIsSuccess] = useState(false)
+export function BalanceTransactionForm({
+  open,
+  onOpenChange,
+  onTransactionAdded,
+}: BalanceTransactionFormProps) {
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,7 +76,7 @@ export function BalanceTransactionForm({ open, onOpenChange, onTransactionAdded 
       amount: "",
       description: "",
     },
-  })
+  });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -58,15 +87,17 @@ export function BalanceTransactionForm({ open, onOpenChange, onTransactionAdded 
         description: values.description,
         userId: "user1", // Current user
         branchId: "branch1", // Current branch
-      })
+      });
 
       toast({
         title: "Успешно",
-        description: `Баланс ${values.type === "ADD" ? "увеличен" : "уменьшен"} успешно`,
-      })
+        description: `Баланс ${
+          values.type === "ADD" ? "увеличен" : "уменьшен"
+        } успешно`,
+      });
 
-      setIsSuccess(true)
-      onTransactionAdded?.()
+      setIsSuccess(true);
+      onTransactionAdded?.();
 
       // Reset form after short delay
       setTimeout(() => {
@@ -75,27 +106,27 @@ export function BalanceTransactionForm({ open, onOpenChange, onTransactionAdded 
           currencyId: "",
           amount: "",
           description: "",
-        })
-        setIsSuccess(false)
-      }, 1500)
+        });
+        setIsSuccess(false);
+      }, 1500);
     } catch (error) {
       toast({
         title: "Ошибка",
         description: "Не удалось обработать транзакцию баланса",
         variant: "destructive",
-      })
+      });
     }
   }
 
-  const transactionType = form.watch("type")
+  const transactionType = form.watch("type");
 
   // Reset form when dialog closes
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen && !isSuccess) {
-      form.reset()
+      form.reset();
     }
-    onOpenChange(newOpen)
-  }
+    onOpenChange(newOpen);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -107,7 +138,9 @@ export function BalanceTransactionForm({ open, onOpenChange, onTransactionAdded 
             ) : (
               <Minus className="h-5 w-5 text-red-600" />
             )}
-            {transactionType === "ADD" ? "Добавить к балансу" : "Вычесть из баланса"}
+            {transactionType === "ADD"
+              ? "Добавить к балансу"
+              : "Вычесть из баланса"}
           </DialogTitle>
         </DialogHeader>
 
@@ -121,7 +154,11 @@ export function BalanceTransactionForm({ open, onOpenChange, onTransactionAdded 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Тип транзакции</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isSuccess}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={isSuccess}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -154,7 +191,11 @@ export function BalanceTransactionForm({ open, onOpenChange, onTransactionAdded 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Валюта</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isSuccess}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={isSuccess}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Выберите валюту" />
@@ -182,7 +223,14 @@ export function BalanceTransactionForm({ open, onOpenChange, onTransactionAdded 
                 <FormItem>
                   <FormLabel>Сумма</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} disabled={isSuccess} />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      {...field}
+                      disabled={isSuccess}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -222,8 +270,14 @@ export function BalanceTransactionForm({ open, onOpenChange, onTransactionAdded 
                 </>
               ) : (
                 <>
-                  {transactionType === "ADD" ? <Plus className="mr-2 h-4 w-4" /> : <Minus className="mr-2 h-4 w-4" />}
-                  {transactionType === "ADD" ? "Добавить к балансу" : "Вычесть из баланса"}
+                  {transactionType === "ADD" ? (
+                    <Plus className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Minus className="mr-2 h-4 w-4" />
+                  )}
+                  {transactionType === "ADD"
+                    ? "Добавить к балансу"
+                    : "Вычесть из баланса"}
                 </>
               )}
             </Button>
@@ -231,5 +285,5 @@ export function BalanceTransactionForm({ open, onOpenChange, onTransactionAdded 
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

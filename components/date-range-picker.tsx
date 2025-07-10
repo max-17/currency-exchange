@@ -71,6 +71,7 @@ export function DateRangePicker({ from, to, onSelect, className }: DateRangePick
             onSelect={handleSelect}
             className="rounded-lg border shadow-sm"
             locale={ru}
+            captionLayout="dropdown"
           />
         </PopoverContent>
       </Popover>
