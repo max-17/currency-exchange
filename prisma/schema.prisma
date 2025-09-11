@@ -14,6 +14,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Account
+// Stores OAuth/provider account details tied to a `User`.
+// Used by NextAuth (or other auth systems) to maintain third-party
+// provider tokens, refresh tokens and related metadata.
 model Account {
   id                       String  @id @default(cuid())
   userId                   String
@@ -33,6 +37,10 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
+// User
+// Represents a system user: admins and managers. Stores contact details,
+// authentication-related fields, profile info, and relations to accounts,
+// sessions, exchange rates they created and exchanges they performed.
 model User {
   id                 String         @id @default(cuid())
   name               String
@@ -51,6 +59,7 @@ model User {
   sessions           Session[]
   exchangeRatesSet   ExchangeRate[]
   exchangesPerformed Exchanges[]
+  transactions       Transaction[]
 }
 
 model Session {
@@ -66,6 +75,8 @@ enum Role {
   ADMIN
 }
 
+// Records individual currency exchange transactions performed by users.
+// Links amounts, currencies, the exchange rate used and the user who executed it.
 model Exchanges {
   id             Int          @id @default(autoincrement())
   fromCurrencyId String
@@ -81,18 +92,21 @@ model Exchanges {
   exchangeRateId Int
 }
 
+// Represents a currency (ISO code, human readable name) used across wallets, exchange rates and transactions.
 model Currency {
   id            String         @id @default(cuid())
   code          String         @unique
   name          String
   wallets       Wallet[]
-  daylyBalances DailyBalance[]
   ratesBase     ExchangeRate[] @relation("BaseCurrency")
   ratesQuote    ExchangeRate[] @relation("QuoteCurrency")
   exchangesFrom Exchanges[]    @relation("ExchangeFrom")
   exchangesTo   Exchanges[]    @relation("ExchangeTo")
+  transactions  Transaction[]
 }
 
+// Stores historical exchange rates between a base and quote currency.
+// Each rate is created by a user and can be used to record exchange transactions.
 model ExchangeRate {
   id              Int         @id @default(autoincrement())
   baseCurrencyId  String
@@ -108,21 +122,46 @@ model ExchangeRate {
   @@index([baseCurrencyId, quoteCurrencyId, createdAt])
 }
 
+// Tracks the balance for a single currency (per logical account/branch).
+// Holds a precise decimal balance and updated timestamp.
 model Wallet {
-  id         String   @id @default(cuid())
-  currencyId String   @unique
-  balance    Decimal  @default(0) @db.Decimal(20, 2)
-  updatedAt  DateTime @updatedAt
-  currency   Currency @relation(fields: [currencyId], references: [id])
+  id          String        @id @default(cuid())
+  currencyId  String        @unique
+  balance     Decimal       @default(0) @db.Decimal(20, 2)
+  updatedAt   DateTime      @updatedAt
+  currency    Currency      @relation(fields: [currencyId], references: [id])
+  Transaction Transaction[]
 }
 
-model DailyBalance {
-  id         Int      @id @default(autoincrement())
-  date       DateTime @default(now())
-  currencyId String
-  balance    Decimal  @db.Decimal(20, 2)
-  currency   Currency @relation(fields: [currencyId], references: [id])
+// TransactionType
+// Enumerates the kinds of balance-affecting transactions.
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  EXCHANGE
+  ADJUSTMENT
+}
 
-  @@unique([date, currencyId])
-  @@index([currencyId, date])
+// Transaction
+// Records a single balance-affecting transaction. Can represent deposits,
+// withdrawals, exchanges or administrative adjustments. Links to the user who
+// performed the action and the currency affected. Optionally references an
+// `Exchanges` record when the transaction originates from an exchange.
+model Transaction {
+  id           Int             @id @default(autoincrement())
+  type         TransactionType
+  amount       Decimal         @db.Decimal(20, 2)
+  currencyId   String
+  currency     Currency        @relation(fields: [currencyId], references: [id])
+  userId       String
+  user         User            @relation(fields: [userId], references: [id])
+  description  String?
+  balanceAfter Decimal?        @db.Decimal(20, 2)
+  createdAt    DateTime        @default(now())
+  wallet       Wallet          @relation(fields: [walletId], references: [id])
+  walletId     String
+
+  @@index([currencyId])
+  @@index([userId])
+  @@index([createdAt])
 }

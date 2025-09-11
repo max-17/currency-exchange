@@ -3,7 +3,6 @@
 import {
   ChevronDown,
   MapPin,
-  Plus,
   LogOut,
   BarChart3,
   Wallet,

@@ -1,7 +1,3 @@
-import Link from "next/link";
-import { Plus } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { CurrencyCard } from "@/components/currency-card";
 import { ExchangeHistoryTable } from "@/components/exchange-history-table";
 import {
@@ -11,15 +7,7 @@ import {
   getExchangeRatesForCurrency,
   mockExchanges,
 } from "@/lib/mock-data";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from "@radix-ui/react-dialog";
-import { DialogFooter, DialogHeader } from "@/components/ui/dialog";
+
 import { CurrencyExchangeForm } from "@/components/currency-exchange-form";
 
 export default function DashboardPage() {

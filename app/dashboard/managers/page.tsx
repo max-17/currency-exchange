@@ -8,156 +8,51 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { useState } from "react";
-import { mockUsers, User } from "@/lib/mock-data";
-import { useForm } from "react-hook-form";
 import z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
+import { createUser, deleteUser, getAllUsers } from "@/server/actions/user";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { formSchema, UserForm } from "@/components/user-form";
+import { EllipsisVertical } from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-export const formSchema = z.object({
-  name: z.string(),
-  phone: z.string(),
-  email: z.string().email(),
-  role: z.enum(["ADMIN", "MANAGER"]),
-});
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function ManagersPage() {
-  const [users, setUsers] = useState<User[]>(mockUsers);
   const [open, setOpen] = useState(false);
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      role: "MANAGER",
-    },
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<
+    (z.infer<typeof formSchema> & { id: string }) | undefined
+  >(undefined);
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: ["users"],
+    queryFn: getAllUsers,
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    await createUser(values);
+    await queryClient.invalidateQueries({ queryKey: ["users"] });
+    setOpen(false);
+    setSelectedUser(undefined);
   }
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Управление пользователями</h1>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>Добавить пользователя</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Добавить пользователя</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Имя пользователя</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Max James" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Электронная почта</FormLabel>
-                      <FormControl>
-                        <Input placeholder="example@mail.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Номер телефона</FormLabel>
-                      <FormControl>
-                        <Input placeholder="+998 12 345 6789" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Роль</FormLabel>
-                      <Select
-                        defaultValue="MANAGER"
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Выберите валюту" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem key="MANAGER" value="MANAGER">
-                            MANAGER
-                          </SelectItem>
-                          <SelectItem key="ADMIN" value="ADMIN">
-                            ADMIN
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button className="w-full" type="submit">
-                  Создать
-                </Button>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+        <Button
+          onClick={() => {
+            setSelectedUser(undefined);
+            setOpen(true);
+          }}
+        >
+          Добавить пользователя
+        </Button>
       </div>
       <Table>
         <TableHeader>
@@ -166,10 +61,18 @@ export default function ManagersPage() {
             <TableHead>Телефон</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Роль</TableHead>
+            <TableHead>Действия</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => (
+          {isLoading && (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center">
+                Загрузка...
+              </TableCell>
+            </TableRow>
+          )}
+          {data?.map((user) => (
             <TableRow key={user.id}>
               <TableCell>{user.name}</TableCell>
               <TableCell>{user.phone}</TableCell>
@@ -177,10 +80,62 @@ export default function ManagersPage() {
               <TableCell>
                 {user.role === "ADMIN" ? "Админ" : "Менеджер"}
               </TableCell>
+              <TableCell className="w-5">
+                <div className="ml-5">
+                  <Popover
+                  // open={popoverOpen} onOpenChange={setPopoverOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <EllipsisVertical className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-48">
+                      <ul className="space-y-2">
+                        <li>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                            onClick={() => {
+                              setSelectedUser({ ...user, email: user.email! });
+                              setOpen(true);
+                            }}
+                          >
+                            Редактировать
+                          </Button>
+                        </li>
+                        <li>
+                          <Button
+                            className="w-full"
+                            variant="destructive"
+                            size="sm"
+                            onClick={async () => {
+                              await deleteUser(user.id);
+                              await queryClient.invalidateQueries({
+                                queryKey: ["users"],
+                              });
+                              setPopoverOpen(false);
+                            }}
+                          >
+                            Удалить
+                          </Button>
+                        </li>
+                      </ul>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      <UserForm
+        open={open}
+        setOpen={setOpen}
+        defaultValues={selectedUser}
+        onSubmit={onSubmit}
+      />
     </div>
   );
 }
