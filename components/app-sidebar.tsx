@@ -34,6 +34,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/mock-data";
 import { CurrencyExchangeForm } from "./currency-exchange-form";
+import { signOut } from "@/auth/helpers";
 
 const navigationItems = [
   {
@@ -120,17 +121,32 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              <SidebarMenuItem key="managers">
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === "/dashboard/managers"}
-                >
-                  <Link href="/dashboard/managers">
-                    <Users className="h-4 w-4" />
-                    <span>Менеджеры</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {currentUser.role === "ADMIN" && (
+                <>
+                  <SidebarMenuItem key="branches">
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === "/dashboard/branches"}
+                    >
+                      <Link href="/dashboard/branches">
+                        <MapPin className="h-4 w-4" />
+                        <span>Филиалы</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem key="managers">
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === "/dashboard/managers"}
+                    >
+                      <Link href="/dashboard/managers">
+                        <Users className="h-4 w-4" />
+                        <span>Менеджеры</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -166,7 +182,7 @@ export function AppSidebar() {
                   <User className="h-4 w-4 mr-2" />
                   Профиль
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600">
+                <DropdownMenuItem onClick={signOut} className="text-red-600">
                   <LogOut className="h-4 w-4 mr-2" />
                   Выйти
                 </DropdownMenuItem>

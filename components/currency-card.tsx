@@ -1,81 +1,102 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Edit2, Check, X, ChevronDown, ChevronUp } from "lucide-react"
-import type { Currency, ExchangeRate } from "@/lib/mock-data"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Edit2, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import type { Currency, ExchangeRate } from "@/lib/mock-data";
 
 interface CurrencyCardProps {
-  currency: Currency
-  currentBalance: number
-  dailyChange: number
-  exchangeRates: ExchangeRate[]
+  currency: Currency;
+  currentBalance: number;
+  dailyChange: number;
+  exchangeRates: ExchangeRate[];
 }
 
-export function CurrencyCard({ currency, currentBalance, dailyChange, exchangeRates }: CurrencyCardProps) {
-  const [editingRates, setEditingRates] = useState<{ [key: number]: string }>({})
-  const [isEditing, setIsEditing] = useState(false)
-  const [showAllRates, setShowAllRates] = useState(false)
+export function CurrencyCard({
+  currency,
+  currentBalance,
+  dailyChange,
+  exchangeRates,
+}: CurrencyCardProps) {
+  const [editingRates, setEditingRates] = useState<{ [key: number]: string }>(
+    {}
+  );
+  const [isEditing, setIsEditing] = useState(false);
+  const [showAllRates, setShowAllRates] = useState(false);
 
   const handleEditRate = (rateId: number, currentRate: number) => {
-    setEditingRates({ ...editingRates, [rateId]: currentRate.toString() })
-    setIsEditing(true)
-  }
+    setEditingRates({ ...editingRates, [rateId]: currentRate.toString() });
+    setIsEditing(true);
+  };
 
   const handleSaveRate = (rateId: number) => {
     // In a real app, this would save to the database
-    console.log(`Сохранение курса ${rateId} со значением ${editingRates[rateId]}`)
-    const newRates = { ...editingRates }
-    delete newRates[rateId]
-    setEditingRates(newRates)
+    console.log(
+      `Сохранение курса ${rateId} со значением ${editingRates[rateId]}`
+    );
+    const newRates = { ...editingRates };
+    delete newRates[rateId];
+    setEditingRates(newRates);
     if (Object.keys(newRates).length === 0) {
-      setIsEditing(false)
+      setIsEditing(false);
     }
-  }
+  };
 
   const handleCancelEdit = (rateId: number) => {
-    const newRates = { ...editingRates }
-    delete newRates[rateId]
-    setEditingRates(newRates)
+    const newRates = { ...editingRates };
+    delete newRates[rateId];
+    setEditingRates(newRates);
     if (Object.keys(newRates).length === 0) {
-      setIsEditing(false)
+      setIsEditing(false);
     }
-  }
+  };
 
   const formatCurrency = (amount: number, code: string) => {
     if (code === "UZS" || code === "KZT") {
       return new Intl.NumberFormat("ru-RU", {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      }).format(amount)
+      }).format(amount);
     }
     return new Intl.NumberFormat("ru-RU", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
-  const isPositiveChange = dailyChange >= 0
+  const isPositiveChange = dailyChange >= 0;
 
   // Show only first 2 rates by default
-  const displayedRates = showAllRates ? exchangeRates : exchangeRates.slice(0, 2)
-  const hasMoreRates = exchangeRates.length > 2
+  const displayedRates = showAllRates
+    ? exchangeRates
+    : exchangeRates.slice(0, 2);
+  const hasMoreRates = exchangeRates.length > 2;
 
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex items-center justify-between text-base">
           <div className="flex items-center gap-2">
-            <span className="text-base font-bold">{currency.code}</span>
-            <span className="text-xs text-muted-foreground">{currency.name}</span>
+            <span>{currency.code}</span>
+            <span className="text-sm text-muted-foreground font-normal">
+              {currency.name}
+            </span>
           </div>
-          <Badge variant={isPositiveChange ? "default" : "destructive"} className="text-xs">
-            {isPositiveChange ? "+" : ""}
-            {formatCurrency(dailyChange, currency.code)}
-          </Badge>
+          <div className="flex gap-1 items-center">
+            <small className="text-muted-foreground text-xs">
+              сегодняшнее изменение
+            </small>
+            <Badge
+              variant={isPositiveChange ? "default" : "destructive"}
+              className="text-xs"
+            >
+              {isPositiveChange ? "+" : "-"}
+              {formatCurrency(dailyChange, currency.code)}
+            </Badge>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
@@ -93,7 +114,10 @@ export function CurrencyCard({ currency, currentBalance, dailyChange, exchangeRa
             <p className="text-xs text-muted-foreground mb-2">Обменные курсы</p>
             <div className="space-y-1">
               {displayedRates.map((rate) => (
-                <div key={rate.id} className="flex items-center justify-between p-1.5 bg-muted/30 rounded text-xs">
+                <div
+                  key={rate.id}
+                  className="flex items-center justify-between p-1.5 bg-muted/30 rounded text-xs"
+                >
                   <span>
                     1 {rate.baseCurrency.code} = {rate.quoteCurrency.code}
                   </span>
@@ -104,7 +128,12 @@ export function CurrencyCard({ currency, currentBalance, dailyChange, exchangeRa
                           type="number"
                           step="0.01"
                           value={editingRates[rate.id]}
-                          onChange={(e) => setEditingRates({ ...editingRates, [rate.id]: e.target.value })}
+                          onChange={(e) =>
+                            setEditingRates({
+                              ...editingRates,
+                              [rate.id]: e.target.value,
+                            })
+                          }
                           className="w-16 h-6 text-xs"
                         />
                         <Button
@@ -168,5 +197,5 @@ export function CurrencyCard({ currency, currentBalance, dailyChange, exchangeRa
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

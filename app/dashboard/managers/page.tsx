@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import z from "zod";
-import { createUser, deleteUser, getAllUsers } from "@/server/actions/user";
+import { createUser, deleteUser, getAllUsers, updateUser } from "@/server/actions/user";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formSchema, UserForm } from "@/components/user-form";
 import { EllipsisVertical } from "lucide-react";
@@ -33,9 +33,12 @@ export default function ManagersPage() {
     queryFn: getAllUsers,
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    await createUser(values);
+  async function onSubmit(values: z.infer<typeof formSchema> & { branchIds?: string[] }) {
+    if (selectedUser?.id) {
+      await updateUser({ id: selectedUser.id, ...values, branchIds: values.branchIds });
+    } else {
+      await createUser({ ...values, branchIds: values.branchIds });
+    }
     await queryClient.invalidateQueries({ queryKey: ["users"] });
     setOpen(false);
     setSelectedUser(undefined);
@@ -98,7 +101,11 @@ export default function ManagersPage() {
                             size="sm"
                             className="w-full"
                             onClick={() => {
-                              setSelectedUser({ ...user, email: user.email! });
+                              setSelectedUser({
+                                ...user,
+                                email: user.email!,
+                                branchIds: (user.Branches || []).map((b: any) => b.id),
+                              });
                               setOpen(true);
                             }}
                           >

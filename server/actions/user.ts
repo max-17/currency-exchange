@@ -3,11 +3,21 @@
 import { db } from "@/lib/db";
 import { User } from "@prisma/client";
 
-export async function createUser(
-  data: Pick<User, "name" | "email" | "phone" | "role">
-) {
+type CreateUserPayload = Pick<User, "name" | "email" | "phone" | "role"> & {
+  branchIds?: string[];
+};
+
+export async function createUser(data: CreateUserPayload) {
   try {
-    await db.user.create({ data });
+    const { branchIds, ...rest } = data;
+    await db.user.create({
+      data: {
+        ...rest,
+        Branches: branchIds
+          ? { connect: branchIds.map((id) => ({ id })) }
+          : undefined,
+      },
+    });
     console.log("user created");
   } catch (error) {
     console.error(error);
@@ -15,7 +25,10 @@ export async function createUser(
 }
 
 export async function getUserById(id: string) {
-  const data = await db.user.findUnique({ where: { id } });
+  const data = await db.user.findUnique({
+    where: { id },
+    include: { Branches: { select: { id: true, name: true } } },
+  });
   return data;
 }
 
@@ -27,13 +40,25 @@ export async function getAllUsers() {
       phone: true,
       email: true,
       role: true,
+      Branches: { select: { id: true, name: true } },
     },
   });
   return data;
 }
 
-export async function updateUser(data: { id: string } & Partial<User>) {
-  await db.user.update({ where: { id: data.id }, data });
+export async function updateUser(
+  data: { id: string } & Partial<User> & { branchIds?: string[] }
+) {
+  const { id, branchIds, ...rest } = data;
+  await db.user.update({
+    where: { id },
+    data: {
+      ...rest,
+      Branches: branchIds
+        ? { set: branchIds.map((id) => ({ id })) }
+        : undefined,
+    },
+  });
 }
 
 export async function deleteUser(id: string) {

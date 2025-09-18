@@ -25,12 +25,15 @@ import {
 } from "@/components/ui/form";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
+import { getAllBranches } from "@/server/actions/branch";
 
 export const formSchema = z.object({
   name: z.string(),
   phone: z.string(),
   email: z.string().email(),
   role: z.enum(["ADMIN", "MANAGER"]),
+  branchIds: z.array(z.string()).optional(),
 });
 
 type formType = z.infer<typeof formSchema>;
@@ -55,8 +58,20 @@ export function UserForm({
       email: "",
       phone: "",
       role: "MANAGER",
+      branchIds: [],
     },
   });
+
+  const [branches, setBranches] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    // get branches from a server action.
+    async function fetchBranches() {
+      const data = await getAllBranches();
+      setBranches(data);
+    }
+    fetchBranches();
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -134,6 +149,31 @@ export function UserForm({
                 </FormItem>
               )}
             />
+            <div>
+              <FormLabel>Филиалы</FormLabel>
+              <div className="grid grid-cols-2 gap-2">
+                {branches.map((b) => (
+                  <label key={b.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={form.getValues("branchIds")?.includes(b.id)}
+                      onChange={(e) => {
+                        const current = form.getValues("branchIds") || [];
+                        if (e.target.checked) {
+                          form.setValue("branchIds", [...current, b.id]);
+                        } else {
+                          form.setValue(
+                            "branchIds",
+                            current.filter((id) => id !== b.id)
+                          );
+                        }
+                      }}
+                    />
+                    <span>{b.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
             <Button className="w-full" type="submit">
               {defaultValues ? "Сохранить" : "Создать"}
             </Button>

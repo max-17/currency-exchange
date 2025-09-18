@@ -16,15 +16,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
-  if (session?.user.role === "ADMIN") {
-    return (
-      <html lang="en" suppressHydrationWarning>
-        <body>
-          <Providers>{children}</Providers>
-        </body>
-      </html>
-    );
-  } else {
-    return redirect("/api/auth/signin");
-  }
+
+  if (!session?.user.id) return redirect("/api/auth/signin");
+
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
 }
