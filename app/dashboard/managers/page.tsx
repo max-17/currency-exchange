@@ -11,7 +11,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import z from "zod";
-import { createUser, deleteUser, getAllUsers, updateUser } from "@/server/actions/user";
+import {
+  createUser,
+  deleteUser,
+  getAllUsers,
+  updateUser,
+} from "@/server/actions/user";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formSchema, UserForm } from "@/components/user-form";
 import { EllipsisVertical } from "lucide-react";
@@ -33,9 +38,15 @@ export default function ManagersPage() {
     queryFn: getAllUsers,
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema> & { branchIds?: string[] }) {
+  async function onSubmit(
+    values: z.infer<typeof formSchema> & { branchIds?: string[] }
+  ) {
     if (selectedUser?.id) {
-      await updateUser({ id: selectedUser.id, ...values, branchIds: values.branchIds });
+      await updateUser({
+        id: selectedUser.id,
+        ...values,
+        branchIds: values.branchIds,
+      });
     } else {
       await createUser({ ...values, branchIds: values.branchIds });
     }
@@ -104,7 +115,9 @@ export default function ManagersPage() {
                               setSelectedUser({
                                 ...user,
                                 email: user.email!,
-                                branchIds: (user.Branches || []).map((b: any) => b.id),
+                                branchIds: (user.Branches || []).map(
+                                  (b: any) => b.id
+                                ),
                               });
                               setOpen(true);
                             }}

@@ -35,9 +35,16 @@ export async function assignBranchesToUser(
   return true;
 }
 
-export async function createBranch(name: string, address?: string, currentUserId?: string) {
+export async function createBranch(
+  name: string,
+  address?: string,
+  currentUserId?: string
+) {
   if (currentUserId) {
-    const u = await db.user.findUnique({ where: { id: currentUserId }, select: { role: true } });
+    const u = await db.user.findUnique({
+      where: { id: currentUserId },
+      select: { role: true },
+    });
     if (!u || u.role !== Role.ADMIN) throw new Error("Unauthorized");
   }
   return db.branch.create({ data: { name, address } });
@@ -45,16 +52,26 @@ export async function createBranch(name: string, address?: string, currentUserId
 
 export async function deleteBranch(id: string, currentUserId?: string) {
   if (currentUserId) {
-    const u = await db.user.findUnique({ where: { id: currentUserId }, select: { role: true } });
+    const u = await db.user.findUnique({
+      where: { id: currentUserId },
+      select: { role: true },
+    });
     if (!u || u.role !== Role.ADMIN) throw new Error("Unauthorized");
   }
   await db.branch.delete({ where: { id } });
   return true;
 }
 
-export async function updateBranch(id: string, data: { name?: string; address?: string }, currentUserId?: string) {
+export async function updateBranch(
+  id: string,
+  data: { name?: string; address?: string },
+  currentUserId?: string
+) {
   if (currentUserId) {
-    const u = await db.user.findUnique({ where: { id: currentUserId }, select: { role: true } });
+    const u = await db.user.findUnique({
+      where: { id: currentUserId },
+      select: { role: true },
+    });
     if (!u || u.role !== Role.ADMIN) throw new Error("Unauthorized");
   }
   return db.branch.update({ where: { id }, data });
