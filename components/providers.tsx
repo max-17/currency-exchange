@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./theme-provider";
+import { Toaster } from "./ui/sonner";
 
 export function Providers({
   children,
@@ -14,6 +15,7 @@ export function Providers({
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         {children}
       </ThemeProvider>
+      <Toaster />
     </QueryClientProvider>
   );
 }

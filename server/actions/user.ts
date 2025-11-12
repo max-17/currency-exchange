@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { User } from "@prisma/client";
 
-type CreateUserPayload = Pick<User, "name" | "email" | "phone" | "role"> & {
+type CreateUserPayload = Pick<User, "name" | "email" | "role"> & {
   branchIds?: string[];
 };
 
@@ -37,7 +37,6 @@ export async function getAllUsers() {
     select: {
       id: true,
       name: true,
-      phone: true,
       email: true,
       role: true,
       Branches: { select: { id: true, name: true } },
